@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 import pandas as pd
 import datetime as dt
 import maya
+import pprint
 
 url = 'https://www.indeed.fr/emplois'
 params = {
@@ -76,21 +77,43 @@ def format_post_date(date_string):
 def extract_job_info(job):
 
     date_format = "%d-%m-%Y"
-    date_scraped = timestamp_dt.date().strftime(date_format)
     date_posted_raw = job.find('span', class_='date').get_text()
 
-    job_dict = {
-    "job_id": job.attrs['id'],
-    "job_title": job.find('a', attrs={'data-tn-element':"jobTitle"}).text.strip(),
-    # "company": job.find('span', class_='company').text.strip(),
-    "location": job.find('span', class_='location').get_text(),
-    # "job_summary": job.find('span', class_='summary').text.strip(),
-    # "job_link": "https://www.indeed.fr" + job.find('h2', attrs={"class": "jobtitle"}).find('a')['href'],
+    id = job.attrs['id']
+    title = job.find('a', attrs={'data-tn-element':"jobTitle"}).text.strip()
+    try:
+        company = job.find('span', class_='company').text.strip()
+    except:
+        company = "N/A"
+    try:
+        location = job.find('span', class_='location').get_text()
+    except:
+        location = "N/A"
+    try:
+        summary = job.find('span', class_='summary').text.strip()
+    except:
+        summary = "N/A"
+    try:
+        link = "https://www.indeed.fr" + job.find('h2', attrs={"class": "jobtitle"}).find('a')['href']
+    except:
+        link = "N/A"
+    date_posted = format_post_date(date_posted_raw)
+    date_scraped = timestamp_dt.date().strftime(date_format)
+
+    job_info_dict = {
+    "job_id": id,
+    "job_title": title,
+    "company": company,
+    "location": location,
+    "summary": summary,
+    "link": link,
     "date_posted": format_post_date(date_posted_raw),
     "date_scraped": date_scraped
     }
 
-    return job_dict
+    return job_info_dict
 
-# job_info = extract_job_info(jobs[0])
-# print(job_info)
+for job in jobs:
+    job_info = extract_job_info(job)
+    pprint.pprint(job_info)
+    print('\n')
