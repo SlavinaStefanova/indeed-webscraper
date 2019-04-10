@@ -4,6 +4,7 @@ import pandas as pd
 import datetime as dt
 import maya
 import pprint
+import unidecode
 
 url = 'https://www.indeed.fr/emplois'
 params = {
@@ -78,9 +79,12 @@ def extract_job_info(job):
 
     date_format = "%d-%m-%Y"
     date_posted_raw = job.find('span', class_='date').get_text()
+    date_posted = format_post_date(date_posted_raw)
+    date_scraped = timestamp_dt.date().strftime(date_format)
 
     id = job.attrs['id']
-    title = job.find('a', attrs={'data-tn-element':"jobTitle"}).text.strip()
+    title = job.find("a")["title"]
+
     try:
         company = job.find('span', class_='company').text.strip()
     except:
@@ -90,30 +94,52 @@ def extract_job_info(job):
     except:
         location = "N/A"
     try:
-        summary = job.find('span', class_='summary').text.strip()
+        summary = job.find('div', class_='summary').get_text().strip()
     except:
         summary = "N/A"
     try:
-        link = "https://www.indeed.fr" + job.find('h2', attrs={"class": "jobtitle"}).find('a')['href']
+        link = "https://www.indeed.fr" + job.find('a').attrs['href']
     except:
         link = "N/A"
-    date_posted = format_post_date(date_posted_raw)
-    date_scraped = timestamp_dt.date().strftime(date_format)
+    try:
+        salary = job.find('span', class_='salary no-wrap').text.strip()
+        salary = unidecode.unidecode(salary)
+    except:
+        salary = 'N/A'
+
+    def get_ad(job):
+        ad_page = requests.get(link)
+        ad = BeautifulSoup(ad_page.text, 'html.parser')
+        text = ad.find('div', class_='jobsearch-JobComponent-description').get_text()
+        try:
+            contract_type = ad.find('div', class_='jobsearch-JobMetadataHeader-item').get_text()
+        except:
+            contract_type = 'N/A'
+        return contract_type, text
+
+    contract_type, text = get_ad(job)
 
     job_info_dict = {
     "job_id": id,
     "job_title": title,
     "company": company,
     "location": location,
+    "contract_type": contract_type,
+    "salary": salary,
     "summary": summary,
     "link": link,
     "date_posted": format_post_date(date_posted_raw),
-    "date_scraped": date_scraped
+    "date_scraped": date_scraped,
+    "text": text
     }
 
     return job_info_dict
 
-for job in jobs:
+
+
+
+
+for job in jobs[3:6]:
     job_info = extract_job_info(job)
     pprint.pprint(job_info)
     print('\n')
