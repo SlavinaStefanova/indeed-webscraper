@@ -46,8 +46,6 @@ def extract_job_postings(start_page, start_values, job_list=[]):
 
 def format_post_date(date_string):
 
-    '''Takes a string of the type "Publiée il y a 2 jours" and returns a formatted date string such as "03-05-2018"'''
-
     date = date_string.split(' ')
 
     if "l'instant" in date or "Aujourd'hui" in date:
