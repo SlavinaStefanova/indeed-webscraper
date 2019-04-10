@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
-import pandas as pd
 import datetime as dt
 import maya
 import pprint
@@ -17,10 +16,6 @@ params = {
 'start': 0
 }
 
-start_page = requests.get(url, params=params)
-timestamp = start_page.headers['date']
-timestamp_dt = maya.parse(timestamp).datetime(to_timezone='Europe/Paris', naive=True)
-
 def pagination(start_page):
 
     try:
@@ -33,7 +28,6 @@ def pagination(start_page):
     except:
         return []
 
-start_values = pagination(start_page)
 
 def extract_job_postings(start_page, start_values, job_list=[]):
 
@@ -48,9 +42,6 @@ def extract_job_postings(start_page, start_values, job_list=[]):
         return extract_job_postings(next_page, start_values, job_list)
     except IndexError:
         return job_list
-
-jobs = extract_job_postings(start_page, start_values)
-print(len(jobs))
 
 
 def format_post_date(date_string):
@@ -111,31 +102,36 @@ def extract_job_info(job):
         ad_page = requests.get(link)
         ad = BeautifulSoup(ad_page.text, 'html.parser')
         text = ad.find('div', class_='jobsearch-JobComponent-description').get_text()
-        try:
-            contract_type = ad.find('div', class_='jobsearch-JobMetadataHeader-item').get_text()
-        except:
-            contract_type = 'N/A'
-        return contract_type, text
 
-    contract_type, text = get_ad(job)
+        return text
 
     job_info_dict = {
     "job_id": id,
     "job_title": title,
     "company": company,
     "location": location,
-    "contract_type": contract_type,
     "salary": salary,
     "summary": summary,
     "link": link,
     "date_posted": format_post_date(date_posted_raw),
     "date_scraped": date_scraped,
-    "text": text
+    "text": get_ad(job)
     }
 
     return job_info_dict
 
-for job in jobs[3:6]:
+# Test code below
+
+start_page = requests.get(url, params=params)
+timestamp = start_page.headers['date']
+timestamp_dt = maya.parse(timestamp).datetime(to_timezone='Europe/Paris', naive=True)
+
+start_values = pagination(start_page)
+
+jobs = extract_job_postings(start_page, start_values)
+print(len(jobs))
+
+for job in jobs[:3]:
     job_info = extract_job_info(job)
     pprint.pprint(job_info)
     print('\n')
