@@ -119,17 +119,18 @@ def extract_job_info(job):
     return job_info_dict
 
 # Test code below
+if __name__ == '__main__':
 
-start_page = requests.get(url, params=params)
-timestamp = start_page.headers['date']
-timestamp_dt = maya.parse(timestamp).datetime(to_timezone='Europe/Paris', naive=True)
+    start_page = requests.get(url, params=params)
+    timestamp = start_page.headers['date']
+    timestamp_dt = maya.parse(timestamp).datetime(to_timezone='Europe/Paris', naive=True)
 
-start_values = pagination(start_page)
+    start_values = pagination(start_page)
 
-jobs = extract_job_postings(start_page, start_values)
-print(len(jobs))
+    jobs = extract_job_postings(start_page, start_values)
+    print(len(jobs))
 
-for job in jobs[:3]:
-    job_info = extract_job_info(job)
-    pprint.pprint(job_info)
-    print('\n')
+    for job in jobs[:3]:
+        job_info = extract_job_info(job)
+        pprint.pprint(job_info)
+        print('\n')
