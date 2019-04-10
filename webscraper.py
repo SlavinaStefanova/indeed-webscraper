@@ -135,10 +135,6 @@ def extract_job_info(job):
 
     return job_info_dict
 
-
-
-
-
 for job in jobs[3:6]:
     job_info = extract_job_info(job)
     pprint.pprint(job_info)
