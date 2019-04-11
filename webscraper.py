@@ -7,7 +7,7 @@ import unidecode
 
 url = 'https://www.indeed.fr/emplois'
 params = {
-'q': "tensorflow",
+'q': "developpeur",
 'l': "france",
 'radius': 0,
 'sort': 'date',
@@ -24,6 +24,7 @@ def pagination(start_page):
         last_page = pag_soup.select(".pn")[-2].text
         last_page = int(last_page)
         start_values = [str(i * 50) for i in range(1, last_page)]
+
         return start_values
     except:
         return []
@@ -38,7 +39,7 @@ def extract_job_postings(start_page, start_values, job_list=[]):
     try:
         next_start_value = start_values.pop(0)
         params['start'] = next_start_value
-        next_page = requests.get(next_url, params=params)
+        next_page = requests.get(url, params=params)
         return extract_job_postings(next_page, start_values, job_list)
     except IndexError:
         return job_list
